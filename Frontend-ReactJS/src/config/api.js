@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-export const API_BASE_URL = 'http://localhost:9000';
+// Automatically uses relative URL when served via Nginx in Docker (Port 80)
+// Defaults to http://localhost:9000 when running npm start on Port 3000/5173
+export const API_BASE_URL = 
+  (window.location.port === '3000' || window.location.port === '5173')
+    ? 'http://localhost:9000'
+    : '';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -9,7 +14,7 @@ export const api = axios.create({
   },
 });
 
-// DYNAMIC INTERCEPTOR: Grabs fresh token on every request
+// Dynamic Interceptor
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('jwt');
