@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,400&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-dark: #0b0b0f;
+  --bg-card: #14141e;
+  --pink-accent: #ff2a85;
+  --pink-glow: rgba(255, 42, 133, 0.35);
+  --gold-accent: #e6c687;
+  --text-main: #f3f4f6;
+  --text-muted: #a1a1aa;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  overflow-x: hidden;
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(255, 42, 133, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 85% 60%, rgba(230, 198, 135, 0.06) 0%, transparent 45%);
+  background-attachment: fixed;
+}
+
+h1, h2, h3, .font-serif {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* Glassmorphism Card Style */
+.glass-card {
+  background: rgba(20, 20, 30, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.glass-card:hover {
+  border-color: rgba(255, 42, 133, 0.4);
+  box-shadow: 0 10px 30px var(--pink-glow);
+  transform: translateY(-6px);
+}
+
+/* Neon Glow Button */
+.btn-pink-glow {
+  background: linear-gradient(135deg, #ff2a85 0%, #c0135d 100%);
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 30px;
+  padding: 12px 28px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 20px rgba(255, 42, 133, 0.4);
+}
+
+.btn-pink-glow:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(255, 42, 133, 0.7);
+}
+
+/* Custom Gold Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0b0b0f;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a2a38;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ff2a85;
+}
+
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

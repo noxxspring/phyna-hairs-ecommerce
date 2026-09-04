@@ -1,0 +1,17 @@
+.adminContainer {
+  background-color: #08080c !important;
+  padding: 1.5rem;
+  min-height: 100vh;
+  width: 100%;
+  color: #ffffff;
+}
+
+/* Ensure smooth scrollbar in dark theme */
+.adminContainer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.adminContainer::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}

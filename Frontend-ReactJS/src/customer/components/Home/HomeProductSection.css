@@ -1,0 +1,86 @@
+/* ======================================================
+   PHYNA HAIRS - HOME PRODUCT SECTION CAROUSEL STYLES
+   ====================================================== */
+
+/* Outer Section Container */
+.home-product-section-container {
+  background-color: #fdfbf7; /* Soft luxurious cream background */
+  border-radius: 12px;
+  padding: 1.5rem 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  margin-bottom: 2rem;
+}
+
+/* Section Title with Luxury Accent Line */
+.home-section-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: 0.5px;
+  position: relative;
+  display: inline-block;
+  margin-bottom: 1.5rem;
+}
+
+.home-section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  width: 40%;
+  height: 3px;
+  background: linear-gradient(90deg, #d4af37, #f3e5ab); /* Gold gradient line */
+  border-radius: 2px;
+}
+
+/* Alice Carousel Stage Items Spacing */
+.alice-carousel__stage-item {
+  padding: 0 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Slight Zoom Effect on Product Card Hover */
+.alice-carousel__stage-item:hover {
+  transform: translateY(-4px);
+}
+
+/* Carousel Inner Box */
+.carousel-box {
+  background: #ffffff;
+  border: 1px solid #f1e6d0;
+  border-radius: 16px;
+  padding: 1.25rem;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+}
+
+/* Next / Prev Navigation Buttons Styling */
+.home-product-section-btn {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  color: #1a1a1a !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
+  border-radius: 50% !important;
+  min-width: 42px !important;
+  width: 42px !important;
+  height: 42px !important;
+}
+
+
+.home-product-section-btn:hover {
+  background-color: #1a1a1a !important;
+  color: #d4af37 !important; /* Premium Gold Icon on Hover */
+  transform: scale(1.1) translateY(-2px) !important;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Mobile Responsive Tweaks */
+@media (max-width: 640px) {
+  .alice-carousel__stage-item {
+    padding: 0 6px;
+  }
+
+  .home-section-title {
+    font-size: 1.35rem;
+  }
+}

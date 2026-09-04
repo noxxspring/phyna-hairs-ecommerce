@@ -1,0 +1,11 @@
+# Ignore Environment Files
+.env
+.env.local
+*.env
+
+# Ignore Build & IDE Folders
+/target/
+.mvn/
+.idea/
+*.iml
+.DS_Store

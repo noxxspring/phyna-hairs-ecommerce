@@ -1,0 +1,201 @@
+/* Carousel Container */
+.carousel-container {
+  position: relative;
+  width: 100%;
+  height: 85vh;
+  min-height: 500px;
+  max-height: 800px;
+  overflow: hidden;
+  background: #0b0b0f;
+}
+
+/* Slide Image */
+.carousel-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Gradient Overlays */
+.carousel-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(11, 11, 15, 0.9) 0%,
+    rgba(11, 11, 15, 0.4) 50%,
+    rgba(11, 11, 15, 0.2) 100%
+  );
+}
+
+.carousel-overlay-side {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(11, 11, 15, 0.6) 0%,
+    transparent 50%,
+    rgba(11, 11, 15, 0.4) 100%
+  );
+}
+
+/* Content Styles */
+.carousel-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  z-index: 20;
+  padding: 0 2rem;
+}
+
+.carousel-text-wrapper {
+  max-width: 900px;
+  width: 100%;
+}
+
+.carousel-badge {
+  display: inline-block;
+  padding: 0.25rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 9999px;
+  background: rgba(255, 42, 133, 0.2);
+  border: 1px solid rgba(255, 42, 133, 0.3);
+  backdrop-filter: blur(4px);
+}
+
+.carousel-badge span {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #e6c687;
+}
+
+.carousel-title {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: clamp(2rem, 5vw, 4.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: white;
+  text-shadow: 0 2px 40px rgba(0, 0, 0, 0.3);
+}
+
+.carousel-subtitle {
+  margin-top: 1rem;
+  font-size: clamp(0.9rem, 1.5vw, 1.25rem);
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 600px;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Navigation Buttons */
+.carousel-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0.75rem;
+  border-radius: 9999px;
+  background: rgba(20, 20, 30, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 30;
+}
+
+.carousel-nav-btn:hover {
+  background: rgba(255, 42, 133, 0.2);
+  border-color: rgba(255, 42, 133, 0.5);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-nav-btn-left {
+  left: 1rem;
+}
+
+.carousel-nav-btn-right {
+  right: 1rem;
+}
+
+/* Dots/Indicators */
+.carousel-dots {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 30;
+}
+
+.carousel-dot {
+  height: 3px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.carousel-dot.active {
+  width: 2rem;
+  background: #ff2a85;
+  box-shadow: 0 0 20px rgba(255, 42, 133, 0.5);
+}
+
+.carousel-dot.inactive {
+  width: 1rem;
+}
+
+.carousel-dot:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .carousel-container {
+    height: 70vh;
+    min-height: 400px;
+  }
+  
+  .carousel-content {
+    padding: 0 1rem;
+  }
+  
+  .carousel-title {
+    font-size: clamp(1.8rem, 8vw, 2.8rem);
+  }
+  
+  .carousel-nav-btn {
+    padding: 0.5rem;
+  }
+  
+  .carousel-nav-btn-left {
+    left: 0.5rem;
+  }
+  
+  .carousel-nav-btn-right {
+    right: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel-container {
+    height: 60vh;
+    min-height: 350px;
+  }
+  
+  .carousel-title {
+    font-size: 1.5rem;
+  }
+  
+  .carousel-subtitle {
+    font-size: 0.85rem;
+  }
+}

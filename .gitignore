@@ -1,0 +1,22 @@
+# Node / React Dependencies & Cache
+node_modules/
+Frontend-ReactJS/node_modules/
+Frontend-ReactJS/build/
+Frontend-ReactJS/.cache/
+
+# Java / Maven Target & JAR Files
+target/
+Backend-Spring/target/
+*.jar
+*.class
+
+# Environment Files & Secrets
+.env
+.env.local
+*.env
+
+# IDE & OS Files
+.idea/
+.vscode/
+*.iml
+.DS_Store
