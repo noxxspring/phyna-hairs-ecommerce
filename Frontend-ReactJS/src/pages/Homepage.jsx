@@ -8,8 +8,8 @@ import HomeProductSection from '../customer/components/Home/HomeProductSection';
 // Material UI Icons
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import { API_BASE_URL } from '../config/api';
 
-const API_BASE_URL = 'http://208.68.39.160:9000';
 
 const Homepage = () => {
   const navigate = useNavigate();
