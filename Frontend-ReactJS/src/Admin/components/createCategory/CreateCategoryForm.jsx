@@ -6,8 +6,7 @@ import {
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-
-const API_BASE_URL = 'http://208.68.39.160:9000';
+import { API_BASE_URL } from '../../../config/api';
 
 const CreateCategoryForm = () => {
   const [loading, setLoading] = useState(false);
@@ -27,7 +26,7 @@ const CreateCategoryForm = () => {
   const fetchCategories = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/categories/`);
-      setCategories(response.data);
+      setCategories(response.data || []);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }

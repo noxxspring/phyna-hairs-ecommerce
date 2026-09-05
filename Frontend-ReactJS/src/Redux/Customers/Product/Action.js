@@ -1,5 +1,4 @@
-import axios from "axios";
-
+import api from '../../../config/api';
 import {
   FIND_PRODUCTS_BY_CATEGORY_REQUEST,
   FIND_PRODUCTS_BY_CATEGORY_SUCCESS,
@@ -10,145 +9,98 @@ import {
   CREATE_PRODUCT_REQUEST,
   CREATE_PRODUCT_SUCCESS,
   CREATE_PRODUCT_FAILURE,
-  UPDATE_PRODUCT_REQUEST,
-  UPDATE_PRODUCT_SUCCESS,
-  UPDATE_PRODUCT_FAILURE,
   DELETE_PRODUCT_REQUEST,
   DELETE_PRODUCT_SUCCESS,
   DELETE_PRODUCT_FAILURE,
-} from "./ActionType";
-import api, { API_BASE_URL } from "../../../config/api";
+  UPDATE_PRODUCT_REQUEST,
+  UPDATE_PRODUCT_SUCCESS,
+  UPDATE_PRODUCT_FAILURE,
+} from './ActionType';
 
+// 1. FETCH PRODUCTS BY CATEGORY
 export const findProducts = (reqData) => async (dispatch) => {
-  const {
-    colors,
-    sizes,
-    minPrice,
-    maxPrice,
-    minDiscount,
-    category,
-    stock,
-    sort,
-    pageNumber,
-    pageSize,
-  } = reqData;
-
+  dispatch({ type: FIND_PRODUCTS_BY_CATEGORY_REQUEST });
   try {
-    dispatch({ type: FIND_PRODUCTS_BY_CATEGORY_REQUEST });
+    const { category, colors, sizes, minPrice, maxPrice, minDiscount, sort, stock, pageNumber, pageSize } = reqData || {};
+
+    const cleanCategory = (category && category !== 'undefined') ? category : '';
+    const cleanSort = (sort && sort !== 'undefined') ? sort : 'price_low';
+    const cleanStock = (stock && stock !== 'undefined') ? stock : '';
 
     const { data } = await api.get(
-      `/api/products?color=${colors}&size=${sizes}&minPrice=${minPrice}&maxPrice=${maxPrice}&minDiscount=${minDiscount}&category=${category}&stock=${stock}&sort=${sort}&pageNumber=${pageNumber}&pageSize=${pageSize}`
+      `/api/products?category=${cleanCategory}&minPrice=${minPrice || 0}&maxPrice=${maxPrice || 1000000}&minDiscount=${minDiscount || 0}&sort=${cleanSort}&stock=${cleanStock}&pageNumber=${pageNumber || 0}&pageSize=${pageSize || 10}`
     );
 
-    console.log("get product by category - ", data);
-    dispatch({
-      type: FIND_PRODUCTS_BY_CATEGORY_SUCCESS,
-      payload: data,
-    });
+    dispatch({ type: FIND_PRODUCTS_BY_CATEGORY_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
       type: FIND_PRODUCTS_BY_CATEGORY_FAILURE,
-      payload:
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message,
+      payload: error.response?.data?.message || error.message,
     });
   }
 };
 
+// 2. FETCH PRODUCT BY ID
 export const findProductById = (reqData) => async (dispatch) => {
+  dispatch({ type: FIND_PRODUCT_BY_ID_REQUEST });
   try {
-    dispatch({ type: FIND_PRODUCT_BY_ID_REQUEST });
-
     const { data } = await api.get(`/api/products/id/${reqData.productId}`);
-
-    console.log("products by  id : ", data);
-    dispatch({
-      type: FIND_PRODUCT_BY_ID_SUCCESS,
-      payload: data,
-    });
+    dispatch({ type: FIND_PRODUCT_BY_ID_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
       type: FIND_PRODUCT_BY_ID_FAILURE,
-      payload:
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message,
+      payload: error.response?.data?.message || error.message,
     });
   }
 };
 
+// 3. CREATE PRODUCT (ADMIN)
 export const createProduct = (product) => async (dispatch) => {
+  dispatch({ type: CREATE_PRODUCT_REQUEST });
   try {
-    dispatch({ type: CREATE_PRODUCT_REQUEST });
-
-    const { data } = await api.post(
-      `${API_BASE_URL}/api/admin/products/`,
-      product.data
-    );
-
-    dispatch({
-      type: CREATE_PRODUCT_SUCCESS,
-      payload: data,
+    const token = localStorage.getItem('jwt');
+    const { data } = await api.post(`/api/admin/products/`, product, {
+      headers: { Authorization: `Bearer ${token}` }
     });
-
-    console.log("created product ", data);
+    dispatch({ type: CREATE_PRODUCT_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
       type: CREATE_PRODUCT_FAILURE,
-      payload:
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message,
+      payload: error.response?.data?.message || error.message,
     });
   }
 };
 
-export const updateProduct = (product) => async (dispatch) => {
+// 4. DELETE PRODUCT (ADMIN)
+export const deleteProduct = (productId) => async (dispatch) => {
+  dispatch({ type: DELETE_PRODUCT_REQUEST });
   try {
-    dispatch({ type: UPDATE_PRODUCT_REQUEST });
-
-    const { data } = await api.put(
-      `${API_BASE_URL}/api/admin/products/${product.productId}`,
-      product
-    );
-
-    dispatch({
-      type: UPDATE_PRODUCT_SUCCESS,
-      payload: data,
+    const token = localStorage.getItem('jwt');
+    const { data } = await api.delete(`/api/admin/products/${productId}/delete`, {
+      headers: { Authorization: `Bearer ${token}` }
     });
+    dispatch({ type: DELETE_PRODUCT_SUCCESS, payload: productId });
+  } catch (error) {
+    dispatch({
+      type: DELETE_PRODUCT_FAILURE,
+      payload: error.response?.data?.message || error.message,
+    });
+  }
+};
+
+// 5. UPDATE PRODUCT (ADMIN)
+export const updateProduct = (productId, reqData) => async (dispatch) => {
+  dispatch({ type: UPDATE_PRODUCT_REQUEST });
+  try {
+    const token = localStorage.getItem('jwt');
+    const { data } = await api.put(`/api/admin/products/${productId}/update`, reqData, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    dispatch({ type: UPDATE_PRODUCT_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
       type: UPDATE_PRODUCT_FAILURE,
-      payload:
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message,
-    });
-  }
-};
-
-export const deleteProduct = (productId) => async (dispatch) => {
-  console.log("delete product action",productId)
-  try {
-    dispatch({ type: DELETE_PRODUCT_REQUEST });
-
-    let {data}=await api.delete(`/api/admin/products/${productId}/delete`);
-
-    dispatch({
-      type: DELETE_PRODUCT_SUCCESS,
-      payload: data,
-    });
-
-    console.log("product delte ",data)
-  } catch (error) {
-    console.log("catch error ",error)
-    dispatch({
-      type: DELETE_PRODUCT_FAILURE,
-      payload:
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message,
+      payload: error.response?.data?.message || error.message,
     });
   }
 };

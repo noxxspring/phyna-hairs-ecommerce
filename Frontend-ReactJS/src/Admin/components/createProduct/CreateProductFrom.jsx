@@ -6,8 +6,7 @@ import {
   FormControlLabel, Checkbox, Grid, Typography, Paper, CircularProgress, Alert 
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-
-const API_BASE_URL = 'http://208.68.39.160:9000';
+import { API_BASE_URL } from '../../../config/api';
 
 const CreateProductForm = () => {
   const navigate = useNavigate();
@@ -103,7 +102,6 @@ const CreateProductForm = () => {
         [name]: type === 'checkbox' ? checked : value
       };
 
-      // Auto-calculate Discounted Price if Price & Discount Percent are set
       const regPrice = parseFloat(name === 'price' ? value : updated.price) || 0;
       const discPercent = parseFloat(name === 'discountPercent' ? value : updated.discountPercent) || 0;
 
