@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
-const API_BASE_URL = 'http://localhost:9000';
+const API_BASE_URL = 'http://208.68.39.160:9000';
 
 const CreateProductForm = () => {
   const navigate = useNavigate();

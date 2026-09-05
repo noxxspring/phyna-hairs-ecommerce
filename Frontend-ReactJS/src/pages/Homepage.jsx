@@ -9,7 +9,7 @@ import HomeProductSection from '../customer/components/Home/HomeProductSection';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
-const API_BASE_URL = 'http://localhost:9000';
+const API_BASE_URL = 'http://208.68.39.160:9000';
 
 const Homepage = () => {
   const navigate = useNavigate();

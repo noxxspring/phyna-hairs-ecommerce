@@ -1,10 +1,10 @@
 import axios from 'axios';
 
 // Automatically uses relative URL when served via Nginx in Docker (Port 80)
-// Defaults to http://localhost:9000 when running npm start on Port 3000/5173
+// Defaults to http://208.68.39.160:9000 when running npm start on Port 3000/5173
 export const API_BASE_URL = 
   (window.location.port === '3000' || window.location.port === '5173')
-    ? 'http://localhost:9000'
+    ? 'http://208.68.39.160:9000'
     : '';
 
 export const api = axios.create({

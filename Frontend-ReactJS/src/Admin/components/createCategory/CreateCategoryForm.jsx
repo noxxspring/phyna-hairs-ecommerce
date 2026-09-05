@@ -7,7 +7,7 @@ import {
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 
-const API_BASE_URL = 'http://localhost:9000';
+const API_BASE_URL = 'http://208.68.39.160:9000';
 
 const CreateCategoryForm = () => {
   const [loading, setLoading] = useState(false);

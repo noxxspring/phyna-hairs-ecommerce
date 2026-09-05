@@ -6,7 +6,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 
-const API_BASE_URL = 'http://localhost:9000';
+const API_BASE_URL = 'http://208.68.39.160:9000';
 
 const CategoryProducts = () => {
   const { categoryId } = useParams();
