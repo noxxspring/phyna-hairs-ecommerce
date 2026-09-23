@@ -20,23 +20,26 @@ public class ProductController {
     private final ProductService productService;
     private final ProductRepository productRepository;
 
-    @GetMapping
+    @GetMapping({"", "/"})
     public ResponseEntity<Page<Product>> findProductByCategoryHandler(
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false, defaultValue = "") String category,
             @RequestParam(required = false) List<String> color,
             @RequestParam(required = false) List<String> size,
-            @RequestParam(required = false) Integer minPrice,
-            @RequestParam(required = false) Integer maxPrice,
-            @RequestParam(required = false) Integer minDiscount,
-            @RequestParam(required = false) String sort,
-            @RequestParam(required = false) String stock,
-            @RequestParam(defaultValue = "0") Integer pageNumber,
-            @RequestParam(defaultValue = "10") Integer pageSize) {
-
-        Page<Product> res = productService.getAllProduct(category, color, size, minPrice, maxPrice, minDiscount, sort, stock, pageNumber, pageSize);
-        return new ResponseEntity<>(res, HttpStatus.ACCEPTED);
+            @RequestParam(required = false, defaultValue = "0") Integer minPrice,
+            @RequestParam(required = false, defaultValue = "1000000") Integer maxPrice,
+            @RequestParam(required = false, defaultValue = "0") Integer minDiscount,
+            @RequestParam(required = false, defaultValue = "price_low") String sort,
+            @RequestParam(required = false, defaultValue = "") String stock,
+            @RequestParam(required = false, defaultValue = "0") Integer pageNumber,
+            @RequestParam(required = false, defaultValue = "100") Integer pageSize
+    ) {
+        Page<Product> res = productService.getAllProduct(
+                category, color, size, minPrice, maxPrice,
+                minDiscount, sort, stock, pageNumber, pageSize
+        );
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
-
+    
     @GetMapping("/id/{productId}")
     public ResponseEntity<Product> findProductByIdHandler(@PathVariable Long productId) throws ProductException {
         Product product = productService.findProductById(productId);
@@ -50,9 +53,23 @@ public class ProductController {
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
 
+
+
+    @GetMapping("/new-arrivals")
+    public ResponseEntity<List<Product>> getNewArrivalsHandler() {
+        List<Product> products = productService.getNewArrivals();
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
+
+    @GetMapping("/best-sellers")
+    public ResponseEntity<List<Product>> getBestSellersHandler() {
+        List<Product> products = productService.getBestSellers();
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
+
     @GetMapping("/search")
-    public ResponseEntity<List<Product>> searchProductHandler(@RequestParam String q) {
-        List<Product> products = productService.searchProduct(q);
+    public ResponseEntity<List<Product>> searchProductHandler(@RequestParam("q") String query) {
+        List<Product> products = productService.searchProduct(query);
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
 }

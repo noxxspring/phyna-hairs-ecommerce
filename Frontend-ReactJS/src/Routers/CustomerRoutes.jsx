@@ -16,6 +16,9 @@ import OrderDetails from '../customer/components/orders/OrderDetails';
 import PaymentSuccess from '../customer/components/paymentSuccess/PaymentSuccess';
 import RateProduct from '../customer/components/ReviewProduct/RateProduct';
 import CategoryProducts from '../customer/components/Category/CategoryProducts';
+import AllProducts from '../customer/components/Product/Product/AllProducts';
+import AllCategories from '../customer/components/Category/AllCategories';
+
 
 
 const CustomerRoutes = () => {
@@ -39,6 +42,10 @@ const CustomerRoutes = () => {
         <Route path="/account/order" element={<Order />} />
         <Route path="/account/order/:orderId" element={<OrderDetails />} />
         <Route path="/category/:categoryId" element={<CategoryProducts />} />
+        <Route path="/products" element={<AllProducts />} />
+        <Route path="/catalog" element={<AllProducts />} />
+        <Route path="/categories" element={<AllCategories />} />
+
         
         {/* FLUTTERWAVE CALLBACK & PAYMENT SUCCESS ROUTES */}
         <Route path="/payment/callback" element={<PaymentSuccess />} />

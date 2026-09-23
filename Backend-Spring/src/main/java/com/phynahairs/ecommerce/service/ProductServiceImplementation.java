@@ -3,7 +3,9 @@ package com.phynahairs.ecommerce.service;
 import com.phynahairs.ecommerce.exception.ProductException;
 import com.phynahairs.ecommerce.model.Category;
 import com.phynahairs.ecommerce.model.Product;
+import com.phynahairs.ecommerce.repository.CartItemRepository;
 import com.phynahairs.ecommerce.repository.CategoryRepository;
+import com.phynahairs.ecommerce.repository.OrderItemRepository;
 import com.phynahairs.ecommerce.repository.ProductRepository;
 import com.phynahairs.ecommerce.request.CreateProductRequest;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,8 @@ public class ProductServiceImplementation implements ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final CartItemRepository cartItemRepository;
+    private final OrderItemRepository orderItemRepository;
 
     @Override
     public Product createProduct(CreateProductRequest req) throws ProductException {
@@ -87,6 +91,11 @@ public class ProductServiceImplementation implements ProductService {
     @Override
     public String deleteProduct(Long productId) throws ProductException {
         Product product = findProductById(productId);
+
+        cartItemRepository.deleteByProductId(productId);
+
+        orderItemRepository.nullifyProductInOrderItems(productId);
+
         product.getSizes().clear();
         productRepository.delete(product);
         return "Product deleted successfully";
@@ -125,7 +134,7 @@ public class ProductServiceImplementation implements ProductService {
 
     @Override
     public List<Product> searchProduct(String query) {
-        return productRepository.searchProduct(query);
+        return productRepository.searchProducts(query);
     }
 
     @Override
@@ -158,4 +167,24 @@ public class ProductServiceImplementation implements ProductService {
         List<Product> pageContent = products.subList(startIndex, endIndex);
         return new PageImpl<>(pageContent, pageable, products.size());
     }
+
+    @Override
+    public List<Product> getNewArrivals() {
+        return productRepository.findTop8ByOrderByCreatedAtDesc();
+    }
+
+    @Override
+    public List<Product> getBestSellers() {
+        Pageable pageable = PageRequest.of(0, 8);
+        List<Product> bestSellers = productRepository.findTopSellingProducts(pageable);
+
+        // Smart Fallback: If store has < 4 total sales, display available products
+        if (bestSellers == null || bestSellers.size() < 4) {
+            return productRepository.findTop8ByProductAvailableTrueOrderByPriceDesc();
+        }
+
+        return bestSellers;
+    }
+
+
 }

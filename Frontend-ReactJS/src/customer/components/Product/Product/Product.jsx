@@ -1,13 +1,7 @@
 import React, { Fragment, useState, useEffect } from "react";
 import { Dialog, Disclosure, Menu, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import {
-  ChevronDownIcon,
-  FunnelIcon,
-  MinusIcon,
-  PlusIcon,
-  Squares2X2Icon,
-} from "@heroicons/react/20/solid";
+import { ChevronDownIcon, FunnelIcon } from "@heroicons/react/20/solid";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -15,26 +9,90 @@ import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
 import Pagination from "@mui/material/Pagination";
 import { Backdrop, CircularProgress } from "@mui/material";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
+import axios from "axios";
+
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
 import { filters, singleFilter, sortOptions } from "./FilterData";
-import ProductCard from "../ProductCard/ProductCard";
 import { findProducts } from "../../../../Redux/Customers/Product/Action";
+import { addItemToCart } from "../../../../Redux/Customers/Cart/Action";
+import { API_BASE_URL } from "../../../../config/api";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
+/* Helper function to resolve real Cloudinary image URL */
+const getProductImage = (product) => {
+  if (!product) return "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500";
+
+  if (product.imageUrl && typeof product.imageUrl === "string" && product.imageUrl.trim() !== "") {
+    return product.imageUrl;
+  }
+  if (product.image && typeof product.image === "string" && product.image.trim() !== "") {
+    return product.image;
+  }
+  if (product.image_url && typeof product.image_url === "string" && product.image_url.trim() !== "") {
+    return product.image_url;
+  }
+
+  if (Array.isArray(product.images) && product.images.length > 0) {
+    const firstImg = product.images[0];
+    return typeof firstImg === "string" ? firstImg : (firstImg?.imageUrl || firstImg?.url);
+  }
+
+  return "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500";
+};
+
+/* Smart Helper to extract EXACT Admin Pricing & Discounts */
+const getAdminPricing = (product) => {
+  const originalPrice = product.price || 0;
+
+  // Extract exact discount percentage set by Admin
+  const discountPercent = 
+    product.discountedPercent ?? 
+    product.discountPersent ?? 
+    product.discountPercent ?? 
+    0;
+
+  // Calculate discounted price
+  let discountedPrice = product.discountedPrice;
+  if (!discountedPrice || discountedPrice >= originalPrice) {
+    discountedPrice = discountPercent > 0 
+      ? Math.round(originalPrice * (1 - discountPercent / 100)) 
+      : originalPrice;
+  }
+
+  const hasDiscount = discountPercent > 0 && discountedPrice < originalPrice;
+
+  return {
+    originalPrice,
+    discountPercent,
+    discountedPrice,
+    hasDiscount
+  };
+};
+
 export default function Product() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [wishlist, setWishlist] = useState([]);
+  const [directProducts, setDirectProducts] = useState([]);
+  const [directLoading, setDirectLoading] = useState(false);
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const param = useParams();
   const location = useLocation();
 
   const { customersProduct } = useSelector((store) => store);
-  const productsList = customersProduct?.products?.content || [];
+  
+  // Use Redux list or Direct API fallback list so ALL products display
+  const reduxProducts = customersProduct?.products?.content || customersProduct?.products || [];
+  const productsList = reduxProducts.length > 0 ? reduxProducts : directProducts;
 
   // Decode URL Parameters
   const decodedQueryString = decodeURIComponent(location.search);
@@ -42,7 +100,7 @@ export default function Product() {
   const colorValue = searchParams.get("color");
   const sizeValue = searchParams.get("size");
   const price = searchParams.get("price");
-  const discount = searchParams.get("discount"); // FIXED TYPO: "discount"
+  const discount = searchParams.get("discount");
   const sortValue = searchParams.get("sort");
   const pageNumber = searchParams.get("page") || 1;
   const stock = searchParams.get("stock");
@@ -93,10 +151,38 @@ export default function Product() {
     navigate({ search: `?${query}` });
   };
 
-  // Fetch Products Live from Backend with Proper Price Defaults
+  // Toggle Wishlist
+  const toggleWishlist = (e, productId) => {
+    e.stopPropagation();
+    if (wishlist.includes(productId)) {
+      setWishlist(wishlist.filter((id) => id !== productId));
+    } else {
+      setWishlist([...wishlist, productId]);
+    }
+  };
+
+  // Add Item to Bag / Cart
+  const handleAddToCart = (e, product) => {
+    e.stopPropagation();
+    const jwt = localStorage.getItem("jwt");
+    if (!jwt) {
+      navigate("/login");
+      return;
+    }
+
+    const data = {
+      productId: product.id,
+      size: "FREE SIZE",
+      quantity: 1,
+    };
+
+    dispatch(addItemToCart(data));
+    navigate("/cart");
+  };
+
+  // Fetch All Products Live
   useEffect(() => {
     const [minPrice, maxPrice] = price === null ? [0, 1000000] : price.split("-").map(Number);
-    
     const categoryQuery = param.categoryId || param.lavelThree || param.lavelTwo || param.lavelOne || "";
 
     const data = {
@@ -104,15 +190,31 @@ export default function Product() {
       colors: colorValue || [],
       sizes: sizeValue || [],
       minPrice: minPrice || 0,
-      maxPrice: maxPrice || 1000000, // FIXED: Set default to 1,000,000 NGN
+      maxPrice: maxPrice || 1000000,
       minDiscount: discount || 0,
       sort: sortValue || "price_low",
-      pageNumber: pageNumber - 1,
-      pageSize: 12,
-      stock: stock,
+      pageNumber: Math.max(0, pageNumber - 1),
+      pageSize: 100, // Increased page size so ALL products load
+      stock: stock || "",
     };
 
     dispatch(findProducts(data));
+
+    // Direct Axios Fallback
+    const fetchDirect = async () => {
+      setDirectLoading(true);
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/products`);
+        const items = res.data?.content || res.data || [];
+        setDirectProducts(items);
+      } catch (e) {
+        console.error("Direct fetch error:", e);
+      } finally {
+        setDirectLoading(false);
+      }
+    };
+
+    fetchDirect();
   }, [param.categoryId, param.lavelThree, param.lavelTwo, param.lavelOne, colorValue, sizeValue, price, discount, sortValue, pageNumber, stock, dispatch]);
 
   return (
@@ -163,7 +265,7 @@ export default function Product() {
                             <h3 className="-my-3 flow-root">
                               <Disclosure.Button className="flex w-full items-center justify-between py-3 text-sm text-gray-200 hover:text-[#ff2a85]">
                                 <span className="font-semibold">{section.name}</span>
-                                <ChevronDownIcon className={classNames(open ? '-rotate-180' : 'rotate-0', 'h-5 w-5 transform')} />
+                                <ChevronDownIcon className={classNames(open ? "-rotate-180" : "rotate-0", "h-5 w-5 transform")} />
                               </Disclosure.Button>
                             </h3>
                             <Disclosure.Panel className="pt-6">
@@ -228,10 +330,10 @@ export default function Product() {
                       <Menu.Item key={option.name}>
                         {({ active }) => (
                           <button
-                            onClick={() => handleSortChange(option.value)} // FIXED: Used option.value
+                            onClick={() => handleSortChange(option.value)}
                             className={classNames(
-                              active ? 'bg-[#ff2a85]/20 text-[#ff2a85]' : 'text-gray-300',
-                              'block w-full text-left px-4 py-2 text-xs font-semibold rounded-lg'
+                              active ? "bg-[#ff2a85]/20 text-[#ff2a85]" : "text-gray-300",
+                              "block w-full text-left px-4 py-2 text-xs font-semibold rounded-lg"
                             )}
                           >
                             {option.name}
@@ -270,7 +372,7 @@ export default function Product() {
                         <h3 className="-my-3 flow-root">
                           <Disclosure.Button className="flex w-full items-center justify-between py-3 text-xs uppercase font-bold text-gray-200 hover:text-[#ff2a85]">
                             <span>{section.name}</span>
-                            <ChevronDownIcon className={classNames(open ? '-rotate-180' : 'rotate-0', 'h-5 w-5 transform')} />
+                            <ChevronDownIcon className={classNames(open ? "-rotate-180" : "rotate-0", "h-5 w-5 transform")} />
                           </Disclosure.Button>
                         </h3>
                         <Disclosure.Panel className="pt-4">
@@ -318,13 +420,91 @@ export default function Product() {
                 ))}
               </form>
 
-              {/* PRODUCT GRID LISTING */}
+              {/* PRODUCT GRID LISTING WITH EXACT ADMIN DISCOUNTS */}
               <div className="lg:col-span-3">
                 {productsList.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {productsList.map((item, index) => (
-                      <ProductCard key={item?.id || index} product={item} />
-                    ))}
+                    {productsList.map((item, index) => {
+                      const { originalPrice, discountPercent, discountedPrice, hasDiscount } = getAdminPricing(item);
+                      const isWishlisted = wishlist.includes(item.id);
+
+                      return (
+                        <div
+                          key={item?.id || index}
+                          onClick={() => navigate(`/product/${item.id}`)}
+                          className="group cursor-pointer bg-[#12121a] rounded-2xl overflow-hidden border border-white/5 hover:border-[#e6c687]/40 transition-all duration-300 flex flex-col justify-between"
+                        >
+                          <div className="relative h-52 sm:h-60 w-full bg-[#08080c] overflow-hidden">
+                            
+                            {/* DISCOUNT BADGE (ONLY SHOWN IF ADMIN SET A DISCOUNT) */}
+                            {hasDiscount && (
+                              <span className="absolute top-2.5 left-2.5 z-10 px-2 py-0.5 rounded bg-black/80 text-[#ff2a85] text-[10px] font-bold">
+                                -{discountPercent}%
+                              </span>
+                            )}
+
+                            {/* Wishlist Heart Button */}
+                            <button
+                              onClick={(e) => toggleWishlist(e, item.id)}
+                              className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center transition-colors"
+                            >
+                              {isWishlisted ? (
+                                <FavoriteIcon className="!text-sm text-[#ff2a85]" />
+                              ) : (
+                                <FavoriteBorderIcon className="!text-sm text-white" />
+                              )}
+                            </button>
+
+                            <img
+                              src={getProductImage(item)}
+                              alt={item.title || item.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          </div>
+
+                          <div className="p-4 space-y-2 flex-grow flex flex-col justify-between">
+                            <div>
+                              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block truncate">
+                                {item.brand || item.color || "PREMIUM HAIR"}
+                              </span>
+
+                              <h4 className="text-xs sm:text-sm font-bold text-white uppercase truncate group-hover:text-[#e6c687] transition-colors">
+                                {item.title || item.name}
+                              </h4>
+
+                              {/* PRICING DISPLAY */}
+                              <div className="flex items-center space-x-2 pt-1">
+                                <span className="text-sm sm:text-base font-bold text-[#e6c687]">
+                                  ₦{discountedPrice.toLocaleString()}
+                                </span>
+                                {hasDiscount && (
+                                  <span className="text-xs text-gray-400 line-through">
+                                    ₦{originalPrice.toLocaleString()}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* DUAL ACTION BUTTONS: ADD TO BAG & DETAILS */}
+                            <div className="grid grid-cols-2 gap-2 pt-3">
+                              <button
+                                onClick={(e) => handleAddToCart(e, item)}
+                                className="flex items-center justify-center space-x-1.5 px-2 py-2 rounded-lg bg-[#ff2a85] hover:bg-[#d41f6e] text-white text-[11px] font-bold uppercase transition-colors"
+                              >
+                                <ShoppingBagOutlinedIcon className="!text-sm" />
+                                <span>Add to Bag</span>
+                              </button>
+                              <button
+                                onClick={() => navigate(`/product/${item.id}`)}
+                                className="px-2 py-2 rounded-lg border border-white/20 hover:border-[#e6c687] text-white text-[11px] font-bold uppercase transition-colors text-center"
+                              >
+                                Details
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-20 bg-[#12121a] rounded-3xl border border-white/10 space-y-3">
@@ -354,7 +534,7 @@ export default function Product() {
         {/* LOADING BACKDROP */}
         <Backdrop
           sx={{ color: "#ff2a85", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-          open={Boolean(customersProduct?.loading)}
+          open={Boolean(customersProduct?.loading || directLoading)}
         >
           <CircularProgress color="inherit" />
         </Backdrop>

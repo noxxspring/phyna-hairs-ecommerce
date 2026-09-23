@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
   TextField, Button, Box, Grid, Typography, Paper, CircularProgress, 
-  Alert, FormControlLabel, Checkbox, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Avatar 
+  Alert, FormControlLabel, Checkbox, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Avatar, IconButton 
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { API_BASE_URL } from '../../../config/api';
 
 const CreateCategoryForm = () => {
@@ -114,6 +115,31 @@ const CreateCategoryForm = () => {
       setMessage({ type: 'error', text: 'Error creating category: ' + (error.response?.data?.message || error.message) });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // DELETE CATEGORY HANDLER
+  const handleDeleteCategory = async (id, name) => {
+    if (!window.confirm(`Are you sure you want to delete category "${name}"?`)) return;
+
+    setMessage({ type: '', text: '' });
+
+    try {
+      const token = localStorage.getItem('jwt');
+      await axios.delete(`${API_BASE_URL}/api/admin/categories/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      setMessage({ type: 'success', text: `🗑️ Category "${name}" deleted successfully!` });
+      fetchCategories();
+
+    } catch (error) {
+      setMessage({ 
+        type: 'error', 
+        text: 'Failed to delete category: ' + (error.response?.data?.message || error.message) 
+      });
     }
   };
 
@@ -234,6 +260,7 @@ const CreateCategoryForm = () => {
                     <TableCell>Name</TableCell>
                     <TableCell>ID</TableCell>
                     <TableCell align="center">Featured</TableCell>
+                    <TableCell align="center">Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -248,6 +275,16 @@ const CreateCategoryForm = () => {
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${cat.featured ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
                           {cat.featured ? 'YES' : 'NO'}
                         </span>
+                      </TableCell>
+                      <TableCell align="center">
+                        <IconButton
+                          onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                          size="small"
+                          sx={{ color: '#ff2a85', '&:hover': { bgcolor: 'rgba(255, 42, 133, 0.15)' } }}
+                          title="Delete Category"
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
                       </TableCell>
                     </TableRow>
                   ))}

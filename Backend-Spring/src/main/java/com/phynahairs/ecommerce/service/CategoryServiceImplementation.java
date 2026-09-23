@@ -3,6 +3,7 @@ package com.phynahairs.ecommerce.service;
 import com.phynahairs.ecommerce.exception.ProductException;
 import com.phynahairs.ecommerce.model.Category;
 import com.phynahairs.ecommerce.repository.CategoryRepository;
+import com.phynahairs.ecommerce.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,7 @@ import java.util.Optional;
 public class CategoryServiceImplementation implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
 
     @Override
     public Category createCategory(Category category) throws ProductException {
@@ -40,6 +42,12 @@ public class CategoryServiceImplementation implements CategoryService {
     @Override
     public void deleteCategory(Long categoryId) throws ProductException {
         Category category = getCategoryById(categoryId);
+        // 1. Unlink child sub-categories
+        categoryRepository.unlinkChildCategories(categoryId);
+
+        // 2. Unlink products belonging to this category
+        productRepository.nullifyCategoryInProducts(categoryId);
+
         categoryRepository.delete(category);
     }
 

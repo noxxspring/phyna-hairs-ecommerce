@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+
+// Icons & Components
 import ProductCard from '../Product/ProductCard/ProductCard';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 
-const API_BASE_URL = 'http://208.68.39.160:9000';
+// Dynamic API Base URL from Central Config
+import { API_BASE_URL } from '../../../config/api';
 
 const CategoryProducts = () => {
   const { categoryId } = useParams();
@@ -24,9 +27,11 @@ const CategoryProducts = () => {
         const catRes = await axios.get(`${API_BASE_URL}/api/categories/${categoryId}`);
         setCategoryInfo(catRes.data);
 
-        // 2. Fetch Category Products
+        // 2. Fetch Category Products (Handles both Array & Paginated data)
         const prodRes = await axios.get(`${API_BASE_URL}/api/products/category/${categoryId}`);
-        setProducts(prodRes.data || []);
+        const items = prodRes.data?.content || prodRes.data || [];
+        setProducts(items);
+
       } catch (error) {
         console.error("Error loading category products:", error);
       } finally {
