@@ -16,7 +16,7 @@ services:
         limits:
           memory: 256M 
   backend:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/phyna-backend:latest
+    image: ghcr.io/noxxspring/phyna-backend:latest
     container_name: phyna_backend_prod
     restart: always
     depends_on:
@@ -40,7 +40,7 @@ services:
         limits:
           memory: 512M 
   frontend:
-    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/phyna-frontend:latest
+    image: ghcr.io/noxspring/phyna-frontend:latest
     container_name: phyna_frontend_prod
     restart: always
     depends_on:
